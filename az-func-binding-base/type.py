@@ -6,5 +6,5 @@ class SdkType():
         self._data = data or {}
 
     @abstractmethod
-    def get_sdk_type(self, data):
+    def get_sdk_type(self):
         pass
