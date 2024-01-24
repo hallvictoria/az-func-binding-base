@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
+from .meta import _ConverterMeta
+
 SNAKE_CASE_RE = re.compile(r'^([a-zA-Z]+\d*_|_+[a-zA-Z\d])\w*$')
 WORD_RE = re.compile(r'^([a-zA-Z]+\d*)$')
 
@@ -145,6 +147,15 @@ class Binding(ABC):
         for p in params:
             if p not in Binding.EXCLUDED_INIT_PARAMS:
                 self._dict[to_camel_case(p)] = getattr(self, p, None)
+
+        # Adding the supports deferred binding flag to signal to the host to send MBD object
+        # check if type is supported
+        # if it is, we add the flag as true
+        if self.type is in _ConverterMeta._types:
+            self._dict["properties"] = {"SupportsDeferredBinding":True}
+        # if it isn't, we set the flag to false
+        else:
+            self._dict["properties"] = {"SupportsDeferredBinding":False}
 
         return self._dict
 

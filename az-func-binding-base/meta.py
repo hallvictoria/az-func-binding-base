@@ -3,6 +3,9 @@
 
 import abc
 import json
+
+import .utils as utils
+
 from typing import Dict, Optional, Union, Tuple, Mapping, Any
 
 
@@ -53,6 +56,8 @@ class Datum:
 class _ConverterMeta(abc.ABCMeta):
 
     _bindings: Dict[str, type] = {}
+    # is there a better way to do this? (definitely, don't want to hard code this)
+    _types: List[type] = ['blobClient, blobContainerClient']
 
     def __new__(mcls, name, bases, dct, *,
                 binding: Optional[str],
@@ -77,6 +82,11 @@ class _ConverterMeta(abc.ABCMeta):
     @classmethod
     def get(cls, binding_name):
         return cls._bindings.get(binding_name)
+
+    @classmethod
+    def get_raw_bindings(self) -> List[str]:
+        # do I send in self again here?
+        return utils.get_raw_bindings(self)
 
     def has_trigger_support(cls) -> bool:
         return cls._trigger is not None  # type: ignore
