@@ -151,7 +151,7 @@ class Binding(ABC):
         # Adding the supports deferred binding flag to signal to the host to send MBD object
         # check if type is supported
         # if it is, we add the flag as true
-        if self.type is in _ConverterMeta._types:
+        if self.type in _ConverterMeta._types:
             self._dict["properties"] = {"SupportsDeferredBinding":True}
         # if it isn't, we set the flag to false
         else:

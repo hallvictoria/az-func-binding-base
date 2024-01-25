@@ -4,7 +4,7 @@
 import abc
 import json
 
-import .utils as utils
+from . import utils
 
 from typing import Dict, Optional, Union, Tuple, Mapping, Any
 
