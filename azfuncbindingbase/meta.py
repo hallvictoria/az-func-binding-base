@@ -6,7 +6,7 @@ import json
 
 from . import utils
 
-from typing import Dict, Optional, Union, Tuple, Mapping, Any
+from typing import Any, Dict, List, Optional, Mapping, Union, Tuple
 
 
 class Datum:
