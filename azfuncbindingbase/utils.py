@@ -19,10 +19,11 @@ class StringifyEnum(Enum):
 
 class StringifyEnumJsonEncoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, StringifyEnum):
-            return str(o)
+        # if isinstance(o, StringifyEnum):
+        #     return str(o)
+        return str(o)
 
-        return super().default(o)
+        #return super().default(o)
 
 class BuildDictMeta(type):
     def __new__(mcs, name, bases, dct):
@@ -70,6 +71,25 @@ class BuildDictMeta(type):
             setattr(self, 'init_params', init_params)
 
         return wrapper
+
+    @staticmethod
+    def clean_nones(value):
+        """
+        Recursively remove all None values from dictionaries and lists,
+        and returns
+        the result as a new dictionary or list.
+        """
+        if isinstance(value, list):
+            return [BuildDictMeta.clean_nones(x) for x in value if
+                    x is not None]
+        elif isinstance(value, dict):
+            return {
+                key: BuildDictMeta.clean_nones(val)
+                for key, val in value.items()
+                if val is not None
+            }
+        else:
+            return value
 
 # Enums
 class BindingDirection(StringifyEnum):
@@ -134,7 +154,7 @@ class Binding(ABC):
     def direction(self) -> int:
         return self._direction.value
 
-    def get_dict_repr(self) -> Dict:
+    def get_dict_repr(binding, input_types) -> Dict:
         """Build a dictionary of a particular binding. The keys are camel
         cased binding field names defined in `init_params` list and
         :class:`Binding` class. \n
@@ -143,21 +163,22 @@ class Binding(ABC):
 
         :return: Dictionary representation of the binding.
         """
-        params = list(dict.fromkeys(getattr(self, 'init_params', [])))
+        params = list(dict.fromkeys(getattr(binding, 'init_params', [])))
         for p in params:
             if p not in Binding.EXCLUDED_INIT_PARAMS:
-                self._dict[to_camel_case(p)] = getattr(self, p, None)
+                binding._dict[to_camel_case(p)] = getattr(binding, p, None)
 
         # Adding the supports deferred binding flag to signal to the host to send MBD object
-        # check if type is supported
-        # if it is, we add the flag as true
-        if self.type in meta._ConverterMeta._types:
-            self._dict["properties"] = {"SupportsDeferredBinding":True}
+        # 1. check if the binding is a supported type (blob, blobTrigger)
+        # 2. check if the binding is an input binding
+        # 3. check if the defined type is an SdkType (BlobClient, BlobContainerClient)
+        if binding.type in meta._ConverterMeta._bindings and binding.direction == 0 and meta._ConverterMeta.check_supported_type(input_types.get(binding.name).pytype):
+            binding._dict["properties"] = {"SupportsDeferredBinding":True}
         # if it isn't, we set the flag to false
         else:
-            self._dict["properties"] = {"SupportsDeferredBinding":False}
+            binding._dict["properties"] = {"SupportsDeferredBinding":False}
 
-        return self._dict
+        return binding._dict
 
 def to_camel_case(snake_case_str: str):
     if snake_case_str is None or len(snake_case_str) == 0:
@@ -202,6 +223,6 @@ def is_word(input_string: str) -> bool:
     """
     return WORD_RE.match(input_string) is not None
 
-def get_raw_bindings(self) -> List[str]:
-    return [json.dumps(b.get_dict_repr(), cls=StringifyEnumJsonEncoder)
-            for b in self._bindings]
+def get_raw_bindings(indexed_function, input_types) -> List[str]:
+    return [json.dumps(Binding.get_dict_repr(b, input_types), cls=StringifyEnumJsonEncoder)
+            for b in indexed_function._bindings]

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='azfuncbindingbase',
-    version='0.0.2',
+    version='0.0.14',
     author='Your Name',
     author_email='your.email@example.com',
     description='A short description of your package',

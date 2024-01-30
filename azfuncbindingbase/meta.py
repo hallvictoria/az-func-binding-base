@@ -5,6 +5,7 @@ import abc
 import json
 
 from . import utils
+from . import sdkType
 
 from typing import Any, Dict, List, Optional, Mapping, Union, Tuple
 
@@ -55,9 +56,8 @@ class Datum:
 
 class _ConverterMeta(abc.ABCMeta):
 
+    # ['blob': BlobClientConverter, 'blobTrigger': BlobClientConverter, ...]
     _bindings: Dict[str, type] = {}
-    # is there a better way to do this? (definitely, don't want to hard code this)
-    _types: List[type] = ['blobClient, blobContainerClient']
 
     def __new__(mcls, name, bases, dct, *,
                 binding: Optional[str],
@@ -83,10 +83,14 @@ class _ConverterMeta(abc.ABCMeta):
     def get(cls, binding_name):
         return cls._bindings.get(binding_name)
 
+    def get_raw_bindings(indexed_function, input_types) -> List[str]:
+        return utils.get_raw_bindings(indexed_function, input_types)
+    
     @classmethod
-    def get_raw_bindings(self) -> List[str]:
-        # do I send in self again here?
-        return utils.get_raw_bindings(self)
+    def check_supported_type(cls, subclass: type) -> bool:
+        if subclass is not None:
+            return issubclass(subclass, sdkType.SdkType)
+        return False
 
     def has_trigger_support(cls) -> bool:
         return cls._trigger is not None  # type: ignore
