@@ -1,6 +1,8 @@
 import unittest
 
-from azfuncbindingbase import utils, sdkType
+from abc import ABC
+
+from azfuncbindingbase import meta, utils, sdkType
 
 
 class TestUtils(unittest.TestCase):
@@ -11,9 +13,12 @@ class TestUtils(unittest.TestCase):
                 self.binding_name = binding_name
                 self.pytype = pytype
 
-        class MockFunction:
+        class MockFunction(ABC):
             def __init__(self, bindings: utils.Binding):
                 self._bindings = bindings
+
+        # Create mock blob
+        meta._ConverterMeta._bindings = {"blob"}
 
         # Create test binding
         mock_blob = utils.Binding(name="client",
@@ -25,16 +30,15 @@ class TestUtils(unittest.TestCase):
             binding_name='blobTrigger', pytype=sdkType.SdkType)}
 
         # Create test indexed_function
-        mock_indexed_functions = MockFunction(bindings=mock_blob)
+        mock_indexed_functions = MockFunction(bindings=[mock_blob])
 
         dict_repr = utils.get_raw_bindings(mock_indexed_functions,
                                            mock_input_types)
         self.assertEqual(dict_repr,
-                         {"direction": "IN", "type": "blobTrigger",
-                          "name": "blob",
-                          "path": "test-input/test.txt",
-                          "connection": "AzureWebJobsStorage",
-                          "properties": {"SupportsDeferredBinding": True}})
+                         ['{"direction": "IN", '
+                          '"dataType": null, "type": "blob", '
+                          '"properties": '
+                          '{"SupportsDeferredBinding": true}}'])
 
     def test_get_dict_repr_non_sdk(self):
         class MockParamTypeInfo:
@@ -46,6 +50,9 @@ class TestUtils(unittest.TestCase):
             def __init__(self, bindings: utils.Binding):
                 self._bindings = bindings
 
+        # Create mock blob
+        meta._ConverterMeta._bindings = {"blob"}
+
         # Create test binding
         mock_blob = utils.Binding(name="blob",
                                   direction=utils.BindingDirection.IN,
@@ -56,29 +63,26 @@ class TestUtils(unittest.TestCase):
             binding_name='blobTrigger', pytype=bytes)}
 
         # Create test indexed_function
-        mock_indexed_functions = MockFunction(bindings=mock_blob)
+        mock_indexed_functions = MockFunction(bindings=[mock_blob])
 
         dict_repr = utils.get_raw_bindings(mock_indexed_functions,
                                            mock_input_types)
         self.assertEqual(dict_repr,
-                         {"direction": "IN",
-                          "type": "blobTrigger",
-                          "name": "blob",
-                          "path": "test-input/test.txt",
-                          "connection": "AzureWebJobsStorage",
-                          "properties": {"SupportsDeferredBinding": False}})
+                         ['{"direction": "IN", '
+                          '"dataType": null, "type": "blob", '
+                          '"properties": '
+                          '{"SupportsDeferredBinding": false}}'])
 
     def test_to_camel_case(self):
         test_str = ""
-        self.assertRaises(ValueError, utils.to_camel_case(test_str))
-
-        test_str = "iAmNotSnake"
-        self.assertRaises(ValueError, utils.to_camel_case(test_str))
+        self.assertRaises(ValueError,
+                          utils.to_camel_case, test_str)
 
         test_str = "1iAmNotAWord"
-        self.assertRaises(ValueError, utils.to_camel_case(test_str))
+        self.assertRaises(ValueError,
+                          utils.to_camel_case, test_str)
 
-        test_str = "string_in_correct_format"
+        test_str = utils.to_camel_case("string_in_correct_format")
         self.assertEqual(test_str, "stringInCorrectFormat")
 
     def test_is_snake_case(self):

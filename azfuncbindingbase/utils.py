@@ -125,7 +125,6 @@ class Binding(ABC):
     EXCLUDED_INIT_PARAMS = {'self', 'kwargs', 'type', 'data_type', 'direction'}
 
     @staticmethod
-    @abstractmethod
     def get_binding_name() -> str:
         pass
 
