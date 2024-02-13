@@ -5,18 +5,20 @@ from abc import ABC
 from azfuncbindingbase import meta, utils, sdkType
 
 
+class MockParamTypeInfo:
+    def __init__(self, binding_name: str, pytype: type):
+        self.binding_name = binding_name
+        self.pytype = pytype
+
+
+class MockFunction(ABC):
+    def __init__(self, bindings: utils.Binding):
+        self._bindings = bindings
+
+
 class TestUtils(unittest.TestCase):
     # Test Utils class
     def test_get_dict_repr_sdk(self):
-        class MockParamTypeInfo:
-            def __init__(self, binding_name: str, pytype: type):
-                self.binding_name = binding_name
-                self.pytype = pytype
-
-        class MockFunction(ABC):
-            def __init__(self, bindings: utils.Binding):
-                self._bindings = bindings
-
         # Create mock blob
         meta._ConverterMeta._bindings = {"blob"}
 
@@ -41,15 +43,6 @@ class TestUtils(unittest.TestCase):
                           '{"SupportsDeferredBinding": true}}'])
 
     def test_get_dict_repr_non_sdk(self):
-        class MockParamTypeInfo:
-            def __init__(self, binding_name: str, pytype: type):
-                self.binding_name = binding_name
-                self.pytype = pytype
-
-        class MockFunction:
-            def __init__(self, bindings: utils.Binding):
-                self._bindings = bindings
-
         # Create mock blob
         meta._ConverterMeta._bindings = {"blob"}
 
