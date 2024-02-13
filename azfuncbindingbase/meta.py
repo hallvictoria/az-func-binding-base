@@ -84,7 +84,7 @@ class _ConverterMeta(abc.ABCMeta):
 
     def get_raw_bindings(indexed_function, input_types) -> List[str]:
         return utils.get_raw_bindings(indexed_function, input_types)
-    
+
     @classmethod
     def check_supported_type(cls, subclass: type) -> bool:
         if subclass is not None:

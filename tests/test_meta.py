@@ -3,6 +3,7 @@ import unittest
 
 from azfuncbindingbase import meta
 
+
 class TestMeta(unittest.TestCase):
     # Test Datum class
     def test_datum_single_level_python_value(self):

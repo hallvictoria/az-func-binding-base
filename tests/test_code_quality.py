@@ -5,7 +5,6 @@ import pathlib
 import subprocess
 import sys
 import unittest
-import re
 
 
 ROOT_PATH = pathlib.Path(__file__).parent.parent

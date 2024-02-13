@@ -11,6 +11,7 @@ from . import meta
 SNAKE_CASE_RE = re.compile(r'^([a-zA-Z]+\d*_|_+[a-zA-Z\d])\w*$')
 WORD_RE = re.compile(r'^([a-zA-Z]+\d*)$')
 
+
 class StringifyEnum(Enum):
     """This class output name of enum object when printed as string."""
 
@@ -89,6 +90,7 @@ class BuildDictMeta(type):
         else:
             return value
 
+
 # Enums
 class BindingDirection(StringifyEnum):
     """Direction of the binding used in function.json"""
@@ -110,6 +112,7 @@ class DataType(StringifyEnum):
     BINARY = 2
     """Parse binding argument as stream."""
     STREAM = 3
+
 
 class Binding(ABC):
     """Abstract binding class which captures common attributes and
@@ -166,17 +169,21 @@ class Binding(ABC):
             if p not in Binding.EXCLUDED_INIT_PARAMS:
                 binding._dict[to_camel_case(p)] = getattr(binding, p, None)
 
-        # Adding the supports deferred binding flag to signal to the host to send MBD object
+        # Adding flag to signal to the host to send MBD object
         # 1. check if the binding is a supported type (blob, blobTrigger)
         # 2. check if the binding is an input binding
-        # 3. check if the defined type is an SdkType (BlobClient, BlobContainerClient)
-        if binding.type in meta._ConverterMeta._bindings and binding.direction == 0 and meta._ConverterMeta.check_supported_type(input_types.get(binding.name).pytype):
-            binding._dict["properties"] = {"SupportsDeferredBinding":True}
+        # 3. check if the defined type is an SdkType
+        if (binding.type in meta._ConverterMeta._bindings
+                and binding.direction == 0
+                and meta._ConverterMeta.check_supported_type(
+                    input_types.get(binding.name).pytype)):
+            binding._dict["properties"] = {"SupportsDeferredBinding": True}
         # if it isn't, we set the flag to false
         else:
-            binding._dict["properties"] = {"SupportsDeferredBinding":False}
+            binding._dict["properties"] = {"SupportsDeferredBinding": False}
 
         return binding._dict
+
 
 def to_camel_case(snake_case_str: str):
     if snake_case_str is None or len(snake_case_str) == 0:
@@ -189,6 +196,7 @@ def to_camel_case(snake_case_str: str):
             f"string with underscore as separator.")
     words = snake_case_str.split('_')
     return words[0] + ''.join([ele.title() for ele in words[1:]])
+
 
 def is_snake_case(input_string: str) -> bool:
     """
@@ -221,6 +229,8 @@ def is_word(input_string: str) -> bool:
     """
     return WORD_RE.match(input_string) is not None
 
+
 def get_raw_bindings(indexed_function, input_types) -> List[str]:
-    return [json.dumps(Binding.get_dict_repr(b, input_types), cls=StringifyEnumJsonEncoder)
+    return [json.dumps(Binding.get_dict_repr(b, input_types),
+                       cls=StringifyEnumJsonEncoder)
             for b in indexed_function._bindings]
