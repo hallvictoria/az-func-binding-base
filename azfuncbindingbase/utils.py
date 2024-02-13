@@ -17,13 +17,11 @@ class StringifyEnum(Enum):
     def __str__(self):
         return str(self.name)
 
+
 class StringifyEnumJsonEncoder(json.JSONEncoder):
     def default(self, o):
-        # if isinstance(o, StringifyEnum):
-        #     return str(o)
         return str(o)
 
-        #return super().default(o)
 
 class BuildDictMeta(type):
     def __new__(mcs, name, bases, dct):

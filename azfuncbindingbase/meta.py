@@ -56,7 +56,6 @@ class Datum:
 
 class _ConverterMeta(abc.ABCMeta):
 
-    # ['blob': BlobClientConverter, 'blobTrigger': BlobClientConverter, ...]
     _bindings: Dict[str, type] = {}
 
     def __new__(mcls, name, bases, dct, *,
